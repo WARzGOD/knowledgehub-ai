@@ -46,11 +46,14 @@ function Chat() {
         ...previous,
         assistantMessage,
       ]);
-    } catch (error: any) {
-      console.error("Erro ao enviar pergunta:", error);
+        } catch (error: any) {
+      console.error(
+        "Erro ao enviar pergunta:",
+        error
+      );
 
       let errorMessage =
-        "Não foi possível conectar ao KnowledgeHub AI.";
+        "Não foi possível processar sua pergunta no momento.";
 
       if (error.response) {
         console.error(
@@ -63,8 +66,13 @@ function Chat() {
           error.response.data
         );
 
-        errorMessage =
-          "O servidor recebeu a solicitação, mas ocorreu um erro ao processar a pergunta.";
+        if (error.response.status === 429) {
+          errorMessage =
+            "⚠️ Limite temporário atingido. O KnowledgeHub AI atingiu a cota disponível da API do Gemini. Aguarde alguns instantes e tente novamente.";
+        } else {
+          errorMessage =
+            "O servidor recebeu a solicitação, mas ocorreu um erro ao processar a pergunta.";
+        }
       } else if (error.request) {
         console.error(
           "Sem resposta do servidor:",
@@ -84,6 +92,7 @@ function Chat() {
         id: Date.now() + 2,
         role: "assistant",
         content: errorMessage,
+        sources: [],
       };
 
       setMessages((previous) => [

@@ -37,7 +37,17 @@ class GeminiService:
                 f"Erro ao consultar o Gemini: {error}"
             )
 
-            return (
-                "Não foi possível processar sua pergunta "
-                "no momento. Tente novamente."
-            )
+            error_message = str(error)
+
+            if (
+                "429" in error_message
+                or "RESOURCE_EXHAUSTED" in error_message
+                or "quota" in error_message.lower()
+            ):
+                raise RuntimeError(
+                    "GEMINI_QUOTA_EXCEEDED"
+                ) from error
+
+            raise RuntimeError(
+                "GEMINI_REQUEST_FAILED"
+            ) from error
