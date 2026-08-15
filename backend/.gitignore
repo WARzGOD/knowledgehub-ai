@@ -38,4 +38,8 @@ logs/
 .cache/
 
 # Banco vetorial persistido
-vectorstore/
+vectorstore/*
+!vectorstore/
+!vectorstore/chroma_db/
+!vectorstore/chroma_db/**
+!vectorstore/chroma_db/**/*.sqlite3
