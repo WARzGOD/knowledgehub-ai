@@ -1,14 +1,30 @@
-import os
+import sys
+from pathlib import Path
 
-import requests
 import streamlit as st
 
 
-API_URL = os.getenv(
-    "API_URL",
-    "http://127.0.0.1:8000"
-)
+# ============================================================
+# CONFIGURAÇÃO DOS CAMINHOS
+# ============================================================
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+BACKEND_PATH = PROJECT_ROOT / "backend"
+
+if str(BACKEND_PATH) not in sys.path:
+    sys.path.insert(0, str(BACKEND_PATH))
+
+
+# ============================================================
+# IMPORTAÇÃO DO RAG
+# ============================================================
+
+from app.rag.rag_service import RAGService
+
+
+# ============================================================
+# CONFIGURAÇÃO DA PÁGINA
+# ============================================================
 
 st.set_page_config(
     page_title="KnowledgeHub AI",
@@ -16,6 +32,10 @@ st.set_page_config(
     layout="centered",
 )
 
+
+# ============================================================
+# CABEÇALHO
+# ============================================================
 
 st.title("🤖 KnowledgeHub AI")
 
@@ -29,6 +49,34 @@ st.markdown(
     """
 )
 
+
+# ============================================================
+# INICIALIZAÇÃO DO RAG
+# ============================================================
+
+@st.cache_resource
+def load_rag():
+    return RAGService()
+
+
+try:
+
+    rag = load_rag()
+
+except Exception as error:
+
+    st.error(
+        "Não foi possível inicializar o KnowledgeHub AI."
+    )
+
+    st.exception(error)
+
+    st.stop()
+
+
+# ============================================================
+# HISTÓRICO
+# ============================================================
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -48,10 +96,18 @@ for message in st.session_state.messages:
                 st.caption(f"• {source}")
 
 
+# ============================================================
+# ENTRADA
+# ============================================================
+
 question = st.chat_input(
     "Digite sua pergunta..."
 )
 
+
+# ============================================================
+# PROCESSAMENTO
+# ============================================================
 
 if question:
 
@@ -67,52 +123,46 @@ if question:
 
     with st.chat_message("assistant"):
 
-        with st.spinner("Consultando a documentação..."):
+        with st.spinner(
+            "Consultando a documentação..."
+        ):
 
             try:
 
-                response = requests.post(
-                    f"{API_URL}/ask",
-                    json={
-                        "question": question
-                    },
-                    timeout=120,
+                result = rag.ask(question)
+
+                answer = result.get(
+                    "answer",
+                    "Não foi possível obter uma resposta.",
                 )
 
-                if response.status_code == 200:
+                sources = result.get(
+                    "sources",
+                    [],
+                )
 
-                    data = response.json()
+                st.markdown(answer)
 
-                    answer = data.get(
-                        "answer",
-                        "Não foi possível obter uma resposta.",
-                    )
+                if sources:
 
-                    sources = data.get(
-                        "sources",
-                        [],
-                    )
+                    st.caption("Fontes:")
 
-                    st.markdown(answer)
+                    for source in sources:
+                        st.caption(
+                            f"• {source}"
+                        )
 
-                    if sources:
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": answer,
+                        "sources": sources,
+                    }
+                )
 
-                        st.caption("Fontes:")
+            except RuntimeError as error:
 
-                        for source in sources:
-                            st.caption(
-                                f"• {source}"
-                            )
-
-                    st.session_state.messages.append(
-                        {
-                            "role": "assistant",
-                            "content": answer,
-                            "sources": sources,
-                        }
-                    )
-
-                elif response.status_code == 429:
+                if str(error) == "GEMINI_QUOTA_EXCEEDED":
 
                     answer = (
                         "O limite temporário da API do "
@@ -120,57 +170,12 @@ if question:
                         "instantes e tente novamente."
                     )
 
-                    st.error(answer)
-
-                    st.session_state.messages.append(
-                        {
-                            "role": "assistant",
-                            "content": answer,
-                            "sources": [],
-                        }
-                    )
-
                 else:
 
                     answer = (
-                        "O servidor recebeu a solicitação, "
-                        "mas ocorreu um erro ao processar "
-                        "a pergunta."
+                        "Ocorreu um erro ao processar "
+                        "sua pergunta."
                     )
-
-                    st.error(answer)
-
-                    st.session_state.messages.append(
-                        {
-                            "role": "assistant",
-                            "content": answer,
-                            "sources": [],
-                        }
-                    )
-
-            except requests.exceptions.ConnectionError:
-
-                answer = (
-                    "Não foi possível conectar ao servidor. "
-                    "Verifique se o FastAPI está em execução."
-                )
-
-                st.error(answer)
-
-                st.session_state.messages.append(
-                    {
-                        "role": "assistant",
-                        "content": answer,
-                        "sources": [],
-                    }
-                )
-
-            except requests.exceptions.Timeout:
-
-                answer = (
-                    "A solicitação demorou muito para "
-                    "ser processada. Tente novamente."
-                )
 
                 st.error(answer)
 
@@ -185,5 +190,8 @@ if question:
             except Exception as error:
 
                 st.error(
-                    f"Erro inesperado: {error}"
+                    "Não foi possível processar "
+                    "a pergunta no momento."
                 )
+
+                st.exception(error)
