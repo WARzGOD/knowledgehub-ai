@@ -9,7 +9,7 @@ from langchain_community.document_loaders import (
 )
 
 
-DOCUMENTS_PATH = Path("documents")
+DOCUMENTS_PATH = Path(__file__).resolve().parents[2] / "documents"
 
 
 def load_documents():

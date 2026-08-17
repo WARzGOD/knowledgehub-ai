@@ -18,7 +18,7 @@ RUN apt-get update \
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Copia o código da aplicação
 COPY app ./app
@@ -33,4 +33,4 @@ COPY vectorstore/chroma_db ./vectorstore/chroma_db
 EXPOSE 8000
 
 # Inicializa a aplicação
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

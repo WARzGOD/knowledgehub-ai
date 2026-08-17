@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
 load_dotenv()
 
@@ -21,6 +22,12 @@ GEMINI_MODEL = os.getenv(
 
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
-# Banco Vetorial
+# Diretório base do backend
 
-VECTOR_DB_PATH = "vectorstore/chroma_db"
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+# Banco vetorial
+
+VECTOR_DB_PATH = str(
+    BASE_DIR / "vectorstore" / "chroma_db"
+)
