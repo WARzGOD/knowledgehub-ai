@@ -2,17 +2,29 @@
 
 > Assistente corporativo inteligente baseado em **RAG (Retrieval-Augmented Generation)** para consulta de documentos internos utilizando linguagem natural.
 
-O **KnowledgeHub AI** é uma aplicação desenvolvida para facilitar o acesso ao conhecimento corporativo. A solução permite que colaboradores façam perguntas sobre políticas, benefícios, procedimentos, segurança da informação e outros conteúdos internos, recebendo respostas fundamentadas na documentação disponível.
+**KnowledgeHub AI** é uma aplicação de IA criada para transformar documentos corporativos em uma base de conhecimento acessível por meio de perguntas em linguagem natural.
 
-O projeto combina **FastAPI, LangChain, ChromaDB, Sentence Transformers e Google Gemini**, utilizando uma arquitetura RAG para recuperar informações relevantes antes da geração da resposta.
+A solução foi desenvolvida para o **Alura + Oracle Tech AI Challenge** e combina **Python, LangChain, ChromaDB, Sentence Transformers, Google Gemini e Streamlit**, com uma API FastAPI disponível para integração e testes locais.
+
+---
+
+## 🚀 Acesso à aplicação
+
+### 🌐 Aplicação pública
+
+**[Abrir o KnowledgeHub AI](https://novacorp-ai-assistant.streamlit.app/)**
+
+A versão pública foi publicada gratuitamente no **Streamlit Community Cloud**, conectada ao repositório GitHub e à branch `deploy-streamlit`.
+
+> **Observação:** a chave da API do Gemini é armazenada como Secret no ambiente de deploy e não é publicada no código-fonte.
 
 ---
 
 ## 🎯 Objetivo
 
-O objetivo do KnowledgeHub AI é transformar documentos corporativos em uma base de conhecimento acessível através de linguagem natural.
+O objetivo do KnowledgeHub AI é facilitar o acesso ao conhecimento corporativo.
 
-Em vez de procurar manualmente informações em diferentes arquivos, o colaborador pode simplesmente perguntar:
+Em vez de procurar manualmente informações em vários arquivos, o colaborador pode perguntar diretamente:
 
 ```text
 Qual o prazo para solicitar reembolso?
@@ -24,159 +36,206 @@ ou:
 Quais são as regras para criação de senhas?
 ```
 
-O sistema recupera os trechos relevantes da documentação e utiliza essas informações como contexto para gerar a resposta.
+O sistema realiza uma busca semântica na base de documentos, recupera os trechos mais relevantes e utiliza esse contexto para gerar uma resposta fundamentada.
+
+Além da resposta, o sistema apresenta as **fontes consultadas**.
+
+Quando a documentação não contém informação relevante, o sistema evita inventar uma resposta e informa que não encontrou a informação solicitada.
 
 ---
 
-## 💡 Problema
+## 💡 Problema que a solução resolve
 
-Informações corporativas frequentemente estão distribuídas em diferentes documentos e formatos, dificultando sua localização e consulta.
+Informações corporativas podem ficar espalhadas em diferentes documentos e formatos, tornando a consulta manual lenta e pouco prática.
 
-O KnowledgeHub AI busca solucionar esse problema oferecendo uma interface de conversação capaz de:
+O KnowledgeHub AI busca centralizar essa experiência por meio de uma interface conversacional capaz de:
 
-- consultar documentos corporativos;
-- realizar busca semântica;
-- recuperar informações relevantes;
-- gerar respostas contextualizadas;
-- apresentar as fontes utilizadas;
-- evitar respostas quando não existe informação relevante na documentação.
+- 📚 consultar documentos corporativos;
+- 🔎 realizar busca semântica;
+- 🧠 recuperar trechos relevantes;
+- 🤖 gerar respostas contextualizadas;
+- 📖 apresentar as fontes utilizadas;
+- 🛡️ evitar respostas sem fundamentação documental.
 
 ---
 
 # 🧠 Arquitetura
 
-O projeto utiliza uma arquitetura baseada em **RAG (Retrieval-Augmented Generation)**.
+O projeto possui duas formas de utilização:
+
+1. **API FastAPI**, utilizada para desenvolvimento, testes e integração;
+2. **Aplicação Streamlit**, utilizada como interface pública final.
+
+### Arquitetura da aplicação pública
 
 ```text
-                         ┌──────────────────────┐
-                         │       Usuário        │
-                         └──────────┬───────────┘
-                                    │
-                              Pergunta
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │      Frontend        │
-                         │      React/Vite      │
-                         └──────────┬───────────┘
-                                    │
-                              POST /ask
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │       FastAPI        │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │     RAGService       │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │  RetrieverService    │
-                         │   Busca semântica    │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │      ChromaDB        │
-                         │    Banco vetorial    │
-                         └──────────┬───────────┘
-                                    │
-                           Contexto relevante
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │    Gemini / Google   │
-                         │    Generative AI     │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │      Resposta        │
-                         │   + fontes utilizadas│
-                         └──────────────────────┘
+┌───────────────────────────┐
+│          Usuário          │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│        Streamlit           │
+│       streamlit/app.py    │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│        RAGService         │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│    RetrieverService       │
+│      Busca semântica      │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│         ChromaDB          │
+│      Banco vetorial       │
+└─────────────┬─────────────┘
+              │
+       Contexto relevante
+              │
+              ▼
+┌───────────────────────────┐
+│      Google Gemini        │
+│    Geração da resposta    │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│ Resposta + fontes usadas  │
+└───────────────────────────┘
 ```
+
+### API de desenvolvimento
+
+```text
+Usuário
+   │
+   ▼
+Frontend React/Vite
+   │
+   │ POST /ask
+   ▼
+FastAPI
+   │
+   ▼
+RAGService
+   │
+   ├── RetrieverService
+   │       │
+   │       ▼
+   │    ChromaDB
+   │
+   └── GeminiService
+           │
+           ▼
+      Google Gemini
+```
+
+A versão pública utiliza o **Streamlit diretamente com o `RAGService`**, evitando a necessidade de manter um segundo serviço web ativo apenas para atender a interface.
 
 ---
 
-# 🔄 Funcionamento do RAG
+# 🔄 Como funciona o RAG
 
-O fluxo principal da aplicação é dividido em etapas:
+RAG significa **Retrieval-Augmented Generation**, ou Geração Aumentada por Recuperação.
 
-### 1. Consulta
+De forma simplificada, o KnowledgeHub AI funciona assim:
 
-O usuário envia uma pergunta através da interface web.
+### 1. 📥 Documentos
 
-### 2. API
+Os documentos corporativos são carregados pelo sistema.
 
-O frontend envia a pergunta para o backend através do endpoint:
+### 2. ✂️ Divisão em trechos
 
-```http
-POST /ask
+Os conteúdos são divididos em partes menores chamadas *chunks*.
+
+Isso facilita encontrar apenas os trechos relacionados a uma pergunta.
+
+### 3. 🧮 Embeddings
+
+Cada trecho é transformado em uma representação vetorial utilizando:
+
+```text
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 ```
 
-### 3. Busca semântica
+Esse modelo possui suporte multilíngue e é adequado para conteúdos em português.
 
-A pergunta é utilizada pelo mecanismo de recuperação para encontrar os documentos mais relevantes na base vetorial.
+### 4. 🗄️ Armazenamento
 
-### 4. Recuperação
+Os vetores são armazenados no **ChromaDB**.
 
-O **ChromaDB** retorna os trechos considerados relevantes para a consulta.
+### 5. 🔎 Pergunta
 
-### 5. Construção do contexto
+O usuário faz uma pergunta em linguagem natural.
 
-Os documentos recuperados são organizados em um contexto que acompanha a pergunta enviada ao modelo generativo.
+### 6. 🧠 Busca semântica
 
-### 6. Geração
+A pergunta também é transformada em representação vetorial e comparada com os documentos armazenados.
 
-O **Google Gemini** recebe a pergunta e o contexto recuperado e gera a resposta.
+O sistema recupera os trechos considerados mais relevantes.
 
-### 7. Fontes
+### 7. 📝 Construção do contexto
 
-O backend também retorna os documentos utilizados durante a recuperação, permitindo apresentar as fontes ao usuário.
+Os trechos recuperados são reunidos e enviados ao modelo generativo como contexto.
 
-### 8. Ausência de informação
+### 8. 🤖 Geração
 
-Quando nenhum documento relevante é encontrado, o sistema informa que a informação não está disponível na documentação, evitando uma resposta sem fundamentação.
+O **Google Gemini** recebe:
+
+- a pergunta do usuário;
+- os trechos recuperados;
+- as regras do assistente.
+
+O modelo então gera a resposta em português.
+
+### 9. 📖 Fontes
+
+Os documentos utilizados na recuperação são apresentados ao usuário.
+
+### 10. 🛡️ Ausência de informação
+
+Quando não existe conteúdo relevante na documentação, o sistema informa que não encontrou a informação solicitada.
+
+Isso ajuda a reduzir respostas inventadas ou sem fundamentação.
 
 ---
 
 # 🛠️ Tecnologias
 
-## Backend
-
 | Tecnologia | Utilização |
 |---|---|
-| Python 3.11 | Linguagem principal |
-| FastAPI | API REST |
-| Uvicorn | Servidor ASGI |
-| LangChain | Orquestração do pipeline RAG |
-| ChromaDB | Banco vetorial |
-| Sentence Transformers | Embeddings |
-| Google Gemini | Geração das respostas |
-| python-dotenv | Variáveis de ambiente |
-| Pydantic | Validação dos dados |
-
-## Frontend
-
-| Tecnologia | Utilização |
-|---|---|
-| React | Interface |
-| TypeScript | Tipagem e desenvolvimento |
-| Vite | Build e servidor de desenvolvimento |
-| CSS | Estilização e responsividade |
-| Axios | Comunicação com a API |
+| **Python 3.11** | Linguagem principal |
+| **Streamlit** | Interface web pública |
+| **FastAPI** | API REST para desenvolvimento e integração |
+| **Uvicorn** | Servidor ASGI |
+| **LangChain** | Orquestração do pipeline RAG |
+| **ChromaDB** | Banco de dados vetorial |
+| **Sentence Transformers** | Geração de embeddings |
+| **Google Gemini** | Modelo generativo |
+| **google-genai** | Integração com Gemini |
+| **python-dotenv** | Variáveis de ambiente |
+| **Pydantic** | Validação de dados |
+| **React** | Frontend original |
+| **TypeScript** | Desenvolvimento do frontend |
+| **Vite** | Build e servidor do frontend |
+| **Docker** | Empacotamento do backend |
+| **Oracle Cloud Infrastructure** | Infraestrutura utilizada durante o projeto |
+| **Git/GitHub** | Versionamento e colaboração |
 
 ---
 
 # 📚 Base de Conhecimento
 
-O MVP utiliza diferentes formatos de documentos corporativos:
+A base documental utilizada no MVP contempla diferentes formatos:
 
 ```text
-documents/
+backend/documents/
 ├── beneficios.csv
 ├── codigo_conduta.docx
 ├── faq_rh.md
@@ -184,8 +243,6 @@ documents/
 ├── politica_seguranca.pdf
 └── termos_lgpd.html
 ```
-
-### Documentos
 
 | Documento | Formato | Conteúdo |
 |---|---|---|
@@ -204,61 +261,57 @@ A aplicação foi estruturada para trabalhar com múltiplos formatos documentais
 
 O KnowledgeHub AI utiliza o **Google Gemini** como modelo generativo.
 
-A integração é realizada através do SDK:
-
-```text
-google-genai
-```
-
-O modelo pode ser configurado através da variável:
+O modelo utilizado pode ser configurado por variável de ambiente:
 
 ```env
 GEMINI_MODEL=models/gemini-3.6-flash
 ```
 
-A chave da API é configurada através de:
+A chave da API é configurada por:
 
 ```env
 GEMINI_API_KEY=sua_chave_aqui
 ```
 
-A chave não deve ser inserida diretamente no código-fonte.
+A chave **não deve ser inserida diretamente no código-fonte**.
 
 ---
 
 # 🔎 Embeddings
 
-Para representar documentos e consultas vetorialmente, o projeto utiliza:
+O projeto utiliza:
 
 ```text
 sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 ```
 
-O modelo foi escolhido por oferecer suporte multilíngue e ser adequado para consultas e documentos em português.
+O modelo foi escolhido por seu suporte multilíngue e adequação a consultas e documentos em português.
 
 ---
 
 # 🗄️ Banco Vetorial
 
-O projeto utiliza **ChromaDB** para armazenamento e recuperação dos embeddings.
+O **ChromaDB** é utilizado para armazenar e recuperar os embeddings.
 
-A persistência local é realizada em:
+A persistência local fica em:
 
 ```text
 backend/vectorstore/chroma_db
 ```
 
-O diretório `vectorstore/` é ignorado pelo Git.
+O banco vetorial é utilizado durante o desenvolvimento e processamento local.
 
-Isso significa que a base vetorial utilizada durante o desenvolvimento permanece localmente e não é enviada para o repositório.
+> O diretório do banco vetorial pode apresentar arquivos modificados durante a execução da aplicação. Esses arquivos não devem ser adicionados a commits acidentalmente.
 
 ---
 
 # 🔌 API
 
-## POST `/ask`
+O backend possui o endpoint:
 
-Endpoint responsável por receber perguntas e retornar respostas baseadas na documentação corporativa.
+## `POST /ask`
+
+Responsável por receber perguntas e retornar respostas fundamentadas na documentação.
 
 ### Requisição
 
@@ -284,210 +337,164 @@ Content-Type: application/json
 }
 ```
 
+### Documentação interativa
+
+Durante a execução local:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
 ---
 
-# 🖥️ Frontend
+# 🖥️ Interface Streamlit
 
-O frontend oferece uma interface de conversação simples e responsiva.
+A aplicação pública está em:
 
-Entre os recursos implementados estão:
+```text
+streamlit/app.py
+```
 
-- 💬 interface de chat;
-- 👤 identificação das mensagens do usuário;
-- 🤖 identificação das respostas do KnowledgeHub AI;
-- 📚 apresentação das fontes utilizadas;
+A interface oferece:
+
+- 💬 chat em linguagem natural;
+- 🤖 respostas do KnowledgeHub AI;
+- 📚 apresentação das fontes;
 - ⏳ indicador de processamento;
-- ⚠️ tratamento visual de erros;
-- 🚦 tratamento específico para erro `429`;
+- ⚠️ tratamento de erros;
+- 🚦 tratamento de limite `429`;
 - 📱 layout responsivo;
-- 🎨 identidade visual própria do KnowledgeHub AI.
+- 🎨 identidade visual própria.
 
-A interface foi propositalmente mantida simples para preservar o foco do MVP na experiência de consulta ao conhecimento corporativo.
-
----
-
-# ⚠️ Limitação da API Gemini
-
-Durante os testes do MVP foi atingido um erro:
-
-```text
-429 RESOURCE_EXHAUSTED
-```
-
-A mensagem retornada pela API indicou uma cota de:
-
-```text
-20 requisições
-```
-
-para a métrica de geração de conteúdo no modelo utilizado dentro do **Free Tier**.
-
-### Importante
-
-Esse limite **não pertence ao KnowledgeHub AI**.
-
-A limitação é determinada pela **cota disponível na API do Google Gemini** de acordo com o plano e as condições de utilização da conta/projeto.
-
-Quando a cota é excedida, a API retorna `HTTP 429 Too Many Requests`.
-
-O KnowledgeHub AI possui tratamento específico para essa situação e apresenta uma mensagem orientativa ao usuário:
-
-```text
-⚠️ Limite temporário atingido.
-
-O KnowledgeHub AI atingiu a cota disponível da API do Gemini.
-Aguarde alguns instantes e tente novamente.
-```
-
-Para utilização além das cotas disponíveis no plano gratuito, é necessário consultar as condições atuais da API Gemini e os limites associados ao projeto.
+A aplicação Streamlit utiliza diretamente o `RAGService`, mantendo o pipeline RAG existente.
 
 ---
 
-# 🔐 Segurança
+# 🌐 Deploy
 
-O projeto adota algumas práticas básicas de segurança:
+## Streamlit Community Cloud
 
-- API Key armazenada em variável de ambiente;
-- `.env` ignorado pelo Git;
-- `.env.example` utilizado como referência de configuração;
-- arquivos temporários ignorados;
-- caches Python ignorados;
-- `node_modules` ignorado;
-- banco vetorial local ignorado;
-- arquivos SQLite e bancos locais ignorados.
+O deploy público foi realizado utilizando o **Streamlit Community Cloud**.
 
-A chave da API nunca deve ser publicada no repositório.
+Configuração utilizada:
 
----
+| Configuração | Valor |
+|---|---|
+| Repositório | `WARzGOD/knowledgehub-ai` |
+| Branch | `deploy-streamlit` |
+| Arquivo principal | `streamlit/app.py` |
+| Plataforma | Streamlit Community Cloud |
+| Segredo | `GEMINI_API_KEY` |
 
-# 📂 Estrutura do Projeto
+A documentação oficial do Streamlit recomenda selecionar o repositório, branch e arquivo de entrada da aplicação durante o deploy. Também é possível configurar Secrets e a versão do Python nas configurações avançadas. 
 
-```text
-knowledgehub-ai/
-│
-├── backend/
-│   │
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── routes.py
-│   │   │
-│   │   ├── core/
-│   │   │   └── config.py
-│   │   │
-│   │   ├── models/
-│   │   │   └── schemas.py
-│   │   │
-│   │   ├── rag/
-│   │   │   ├── document_loader.py
-│   │   │   ├── embedding_store.py
-│   │   │   ├── rag_service.py
-│   │   │   ├── retriever.py
-│   │   │   └── text_splitter.py
-│   │   │
-│   │   ├── services/
-│   │   │   └── gemini_service.py
-│   │   │
-│   │   ├── utils/
-│   │   │   └── logger.py
-│   │   │
-│   │   └── main.py
-│   │
-│   ├── documents/
-│   │   ├── beneficios.csv
-│   │   ├── codigo_conduta.docx
-│   │   ├── faq_rh.md
-│   │   ├── manual_colaborador_novacorp.md
-│   │   ├── politica_seguranca.pdf
-│   │   └── termos_lgpd.html
-│   │
-│   ├── scripts/
-│   │   └── list_models.py
-│   │
-│   ├── tests/
-│   │   └── test_gemini.py
-│   │
-│   ├── vectorstore/
-│   │   └── chroma_db/
-│   │
-│   ├── .env.example
-│   ├── .gitignore
-│   ├── Dockerfile
-│   ├── README.md
-│   └── requirements.txt
-│
-├── frontend/
-│   │
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Chat.tsx
-│   │   │   ├── Header.tsx
-│   │   │   └── MessageInput.tsx
-│   │   │
-│   │   ├── services/
-│   │   │   └── api.ts
-│   │   │
-│   │   ├── types/
-│   │   │   └── chat.ts
-│   │   │
-│   │   ├── App.tsx
-│   │   ├── index.css
-│   │   └── main.tsx
-│   │
-│   ├── package.json
-│   └── ...
-│
-├── .gitignore
-└── README.md
-```
+A aplicação atualmente pode ser acessada em:
 
-> Diretórios gerados localmente, como `.venv`, `node_modules`, `__pycache__` e `vectorstore/chroma_db`, não são versionados.
+**https://novacorp-ai-assistant.streamlit.app/**
+
+> O Streamlit Community Cloud oferece hospedagem gratuita para aplicações Streamlit e integra o deploy diretamente ao GitHub.
 
 ---
 
-# ▶️ Execução Local
+# 🔐 Variáveis de ambiente
 
-## Backend
+## Execução local
 
-Entre na pasta:
-
-```powershell
-cd backend
-```
-
-Crie o ambiente virtual:
-
-```powershell
-python -m venv .venv
-```
-
-Ative o ambiente:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-Instale as dependências:
-
-```powershell
-pip install -r requirements.txt
-```
-
-Configure o arquivo:
+Crie um arquivo:
 
 ```text
 .env
 ```
 
-com:
+Exemplo:
 
 ```env
 GEMINI_API_KEY=sua_chave_api
 GEMINI_MODEL=models/gemini-3.6-flash
 ```
 
-Execute:
+O arquivo `.env` não deve ser enviado ao GitHub.
+
+## Streamlit Community Cloud
+
+A chave `GEMINI_API_KEY` é cadastrada como **Secret** nas configurações da aplicação.
+
+Não coloque a chave real:
+
+- no código;
+- no `README.md`;
+- em arquivos versionados;
+- em screenshots;
+- em vídeos de demonstração;
+- em commits do Git.
+
+---
+
+# ▶️ Execução local
+
+## 1. Clonar o projeto
 
 ```powershell
+git clone https://github.com/WARzGOD/knowledgehub-ai.git
+cd knowledgehub-ai
+```
+
+## 2. Criar ambiente virtual
+
+```powershell
+python -m venv .venv
+```
+
+## 3. Ativar o ambiente
+
+No Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+## 4. Instalar dependências
+
+Para executar a aplicação Streamlit:
+
+```powershell
+pip install -r requirements.txt
+```
+
+Para executar o backend:
+
+```powershell
+pip install -r backend/requirements.txt
+```
+
+## 5. Configurar a API
+
+Configure o `.env` com:
+
+```env
+GEMINI_API_KEY=sua_chave_api
+GEMINI_MODEL=models/gemini-3.6-flash
+```
+
+## 6. Executar o Streamlit
+
+```powershell
+streamlit run .\streamlit\app.py
+```
+
+A aplicação ficará disponível normalmente em:
+
+```text
+http://localhost:8501
+```
+
+## 7. Executar o backend FastAPI
+
+Em outro terminal:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
 python -m uvicorn app.main:app --reload
 ```
 
@@ -505,134 +512,216 @@ http://127.0.0.1:8000/docs
 
 ---
 
-# 🌐 Frontend
-
-Em outro terminal:
-
-```powershell
-cd frontend
-```
-
-Instale as dependências:
-
-```powershell
-npm install
-```
-
-Execute:
-
-```powershell
-npm run dev
-```
-
-O Vite disponibilizará a aplicação em:
+# 📂 Estrutura do Projeto
 
 ```text
-http://localhost:5173
+knowledgehub-ai/
+│
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── routes.py
+│   │   ├── core/
+│   │   │   └── config.py
+│   │   ├── models/
+│   │   │   └── schemas.py
+│   │   ├── rag/
+│   │   │   ├── document_loader.py
+│   │   │   ├── embedding_store.py
+│   │   │   ├── rag_service.py
+│   │   │   ├── retriever.py
+│   │   │   └── text_splitter.py
+│   │   ├── services/
+│   │   │   └── gemini_service.py
+│   │   ├── utils/
+│   │   │   └── logger.py
+│   │   └── main.py
+│   │
+│   ├── documents/
+│   ├── scripts/
+│   ├── tests/
+│   ├── vectorstore/
+│   ├── .env.example
+│   ├── Dockerfile
+│   ├── constraints.txt
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── services/
+│   │   ├── types/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   └── package.json
+│
+├── streamlit/
+│   └── app.py
+│
+├── .gitignore
+├── requirements.txt
+└── README.md
 ```
-
-O frontend realiza as requisições para o backend FastAPI.
 
 ---
 
 # 🧪 Validação do MVP
 
-O MVP foi validado considerando os principais componentes da solução:
+O projeto foi validado considerando os principais componentes da solução:
 
 - [x] Backend FastAPI funcionando
+- [x] Endpoint `/ask`
 - [x] Frontend React funcionando
 - [x] Comunicação frontend ↔ backend
 - [x] Pipeline RAG funcionando
 - [x] Busca semântica
 - [x] ChromaDB
-- [x] Embeddings
-- [x] Integração com Gemini
+- [x] Embeddings multilíngues
+- [x] Integração com Google Gemini
 - [x] Respostas fundamentadas na documentação
 - [x] Retorno das fontes utilizadas
 - [x] Tratamento de perguntas sem informação relevante
 - [x] Tratamento de erro `429`
-- [x] Interface responsiva
-- [x] Estado de carregamento
-- [x] Identidade visual do assistente
+- [x] Interface Streamlit funcionando localmente
+- [x] Aplicação Streamlit publicada
+- [x] Secret `GEMINI_API_KEY` configurado no ambiente de deploy
+- [x] Aplicação pública acessível pela internet
 - [x] Proteção das variáveis de ambiente
 
 ---
 
 # 🧪 Exemplos de consultas
 
-### Recursos Humanos
+### 👥 Recursos Humanos
 
 ```text
 Qual o prazo para solicitar reembolso?
 ```
 
-### Segurança da Informação
+### 🔐 Segurança da Informação
 
 ```text
 Quais são as regras para criação de senhas?
 ```
 
-### Benefícios
+### 🎁 Benefícios
 
 ```text
-Como funciona o benefício de vale-refeição?
+Quais são os benefícios disponíveis para os funcionários?
 ```
 
-### LGPD
+### ⚖️ LGPD
 
 ```text
 Quais são os direitos do titular?
 ```
 
-### Informação inexistente
+### 🚫 Informação inexistente
 
 ```text
 Qual é o salário dos desenvolvedores da NovaCorp?
 ```
 
-Quando a documentação não possui informação relevante, o sistema evita utilizar conhecimento externo para responder.
+Para uma pergunta cuja resposta não esteja presente na documentação, o sistema informa que não encontrou a informação em vez de inventar um dado.
+
+### Exemplo validado
+
+**Pergunta:**
+
+```text
+Estou com uma despesa que fiz há 10 anos. Ainda posso pedir reembolso?
+```
+
+**Comportamento esperado:**
+
+O sistema utiliza a regra documentada de que solicitações de reembolso devem ser realizadas em até **15 dias corridos** após a despesa e responde com base nessa informação.
 
 ---
 
-# 🗺️ Roadmap
+# 🎥 Demonstração
 
-Possíveis evoluções futuras:
+O vídeo de apresentação do projeto será disponibilizado aos avaliadores por meio do Google Drive.
 
-- [ ] Histórico de conversas
-- [ ] Autenticação de usuários
-- [ ] Controle de acesso por departamento
-- [ ] Upload de documentos
-- [ ] Atualização automática da base vetorial
-- [ ] Monitoramento da API
-- [ ] Métricas de utilização
-- [ ] Avaliação automatizada das respostas
-- [ ] Deploy em ambiente cloud
-- [ ] Integração com sistemas corporativos
-
-Essas funcionalidades não fazem parte do MVP atual.
+> 🔗 **Vídeo de apresentação:** `https://drive.google.com/file/d/1yTeRB7dAc9nkmmnAkk8b4JUUAQYs9KNS/view?usp=sharing`
 
 ---
 
-# 📊 Status
+# 🖼️ Evidências do projeto
 
-## 🚀 MVP funcional
+```text
+docs/
+└── images/
+    ├── oracle-oci-01.png
+    ├── oracle-oci-02.png
+    ├── oracle-oci-03.png
+    └── streamlit-app.png
+```
 
-O KnowledgeHub AI possui atualmente:
+### ☁️ Oracle Cloud Infrastructure
 
-- API REST funcional;
-- pipeline RAG;
-- recuperação semântica;
-- banco vetorial;
-- embeddings multilíngues;
-- integração com Google Gemini;
-- base documental diversificada;
-- frontend responsivo;
-- apresentação das fontes;
-- tratamento de erros;
-- configuração por variáveis de ambiente;
-- documentação técnica.
+#### Infraestrutura OCI
 
-O MVP encontra-se em estado funcional e apresentável para demonstração.
+#### Configuração da infraestrutura
+
+![Evidência da infraestrutura OCI](docs/images/Configuracao_infraestrutura.png)
+
+#### Evidência adicional
+
+![Evidência Oracle](docs/images/evidencia_OCI.png)
+
+### 🤖 Aplicação KnowledgeHub AI
+
+![KnowledgeHub AI em execução](docs/images/KnowledgeHub_AI.png)
+
+---
+
+# ☁️ Oracle Cloud Infrastructure
+
+O projeto também utilizou recursos da **Oracle Cloud Infrastructure (OCI)** durante o desenvolvimento e validação da infraestrutura.
+
+A infraestrutura envolveu recursos de computação e rede, incluindo:
+
+- Compute Instance;
+- Virtual Cloud Network (VCN);
+- subnet;
+- Internet Gateway;
+- regras de rede;
+- acesso remoto à instância.
+
+A OCI foi utilizada como parte da infraestrutura e evidências do projeto. A aplicação pública final, entretanto, está hospedada no **Streamlit Community Cloud**.
+
+---
+
+# ⚠️ Limitação da API Gemini
+
+Durante os testes do MVP, a API gratuita do Gemini apresentou limitação de cota, retornando:
+
+```text
+429 RESOURCE_EXHAUSTED
+```
+
+Esse limite pertence à cota da API do Google Gemini e não ao KnowledgeHub AI.
+
+A aplicação possui tratamento específico para esse cenário e apresenta uma mensagem orientativa ao usuário.
+
+> Os limites de utilização da API podem variar conforme o modelo, conta, projeto e condições vigentes do serviço.
+
+---
+
+# 🔐 Segurança
+
+O projeto adota práticas básicas de proteção de credenciais:
+
+- 🔑 API Key armazenada em variável de ambiente/Secret;
+- 🚫 `.env` ignorado pelo Git;
+- 🚫 chaves não armazenadas no código;
+- 🚫 tokens não armazenados no README;
+- 🚫 arquivos temporários ignorados;
+- 🚫 caches Python ignorados;
+- 🚫 `node_modules` ignorado;
+- 🚫 arquivos locais desnecessários ignorados.
+
+A chave da API nunca deve ser publicada no repositório.
 
 ---
 
@@ -644,29 +733,84 @@ As respostas são fundamentadas nos documentos recuperados pela aplicação.
 
 ### 📚 Base documental diversificada
 
-O sistema trabalha com CSV, DOCX, HTML, Markdown e PDF.
+O sistema trabalha com:
+
+- CSV;
+- DOCX;
+- HTML;
+- Markdown;
+- PDF.
 
 ### 🔎 Busca semântica
 
-A recuperação é baseada em similaridade semântica, permitindo consultas em linguagem natural.
+O usuário pode fazer perguntas em linguagem natural sem precisar saber o nome exato do arquivo ou utilizar palavras-chave específicas.
 
-### 🔐 Respostas controladas
+### 🛡️ Respostas controladas
 
-O prompt utilizado orienta o modelo a responder exclusivamente com base na documentação recuperada.
+O prompt do `RAGService` orienta o modelo a utilizar somente a documentação recuperada.
 
 ### 📖 Fontes
 
-As fontes utilizadas são retornadas pela API e apresentadas na interface.
+As fontes utilizadas na recuperação são retornadas ao usuário.
 
-### 📱 Interface simples e responsiva
+### 🌐 Aplicação pública
 
-O frontend foi desenvolvido para proporcionar uma experiência de chat direta, sem adicionar complexidade desnecessária ao MVP.
+O projeto possui uma versão funcional publicada na internet através do Streamlit Community Cloud.
+
+### 💰 Deploy gratuito
+
+A publicação da interface pública foi realizada sem a necessidade de contratar uma instância paga para manter um backend separado.
+
+---
+
+# 🗺️ Possíveis evoluções
+
+O MVP pode evoluir futuramente com:
+
+- [ ] autenticação de usuários;
+- [ ] controle de acesso por departamento;
+- [ ] upload de documentos pela interface;
+- [ ] atualização automática da base vetorial;
+- [ ] histórico persistente de conversas;
+- [ ] monitoramento;
+- [ ] métricas de utilização;
+- [ ] avaliação automatizada das respostas;
+- [ ] integração com sistemas corporativos;
+- [ ] banco vetorial gerenciado;
+- [ ] mecanismos adicionais de segurança.
+
+Essas funcionalidades não fazem parte do MVP atual.
+
+---
+
+# 📊 Status
+
+## 🚀 MVP funcional e publicado
+
+O KnowledgeHub AI possui atualmente:
+
+- ✅ pipeline RAG;
+- ✅ recuperação semântica;
+- ✅ banco vetorial;
+- ✅ embeddings multilíngues;
+- ✅ integração com Google Gemini;
+- ✅ base documental diversificada;
+- ✅ API REST;
+- ✅ interface React original;
+- ✅ interface Streamlit;
+- ✅ apresentação das fontes;
+- ✅ tratamento de erros;
+- ✅ proteção das credenciais;
+- ✅ deploy público;
+- ✅ documentação técnica.
+
+**Status: concluído e disponível para demonstração.**
 
 ---
 
 # 📄 Licença
 
-Projeto desenvolvido para fins educacionais e de demonstração tecnológica.
+Projeto desenvolvido para fins educacionais e de demonstração tecnológica no contexto do **Alura + Oracle Tech AI Challenge**.
 
 ---
 
