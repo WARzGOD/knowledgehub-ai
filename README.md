@@ -663,15 +663,15 @@ docs/
 
 #### Configuração da infraestrutura
 
-![Evidência da infraestrutura OCI](docs/images/Configuracao_infraestrutura.png)
+![Evidência da infraestrutura OCI](docs/images/configuracao-infraestrutura.png)
 
 #### Evidência adicional
 
-![Evidência Oracle](docs/images/evidencia_OCI.png)
+![Evidência Oracle](docs/images/evidencia-oci.png)
 
 ### 🤖 Aplicação KnowledgeHub AI
 
-![KnowledgeHub AI em execução](docs/images/KnowledgeHub_AI.png)
+![KnowledgeHub AI em execução](docs/images/knowledgehub-ai.png)
 
 ---
 
